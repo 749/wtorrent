@@ -820,6 +820,7 @@
 		var $errno;
 		var $errstr;
 		var $debug=0;
+		var $debugFile=null;
 		var $username='';
 		var $password='';
 		var $authtype=1;
@@ -960,6 +961,25 @@
 		function setDebug($in)
 		{
 			$this->debug=$in;
+		}
+		
+		/**
+		 * Sets the file to which the debug output is written to, if not valid output is printed to screen.
+		 * New entries are appended to the file.
+		 * Default: print to screen
+		 * @param string|file $debugFile A valid filepath to the log file, otherwise errors will go to screen 
+		 * @access public
+		 */
+		function setDebugFile($in)
+		{
+			//close the previous file
+			if(!is_null($this->debugFile) && is_resource($this->debugFile))
+				@fclose($this->debugFile);
+			
+			if(is_file($in) && is_writeable($in))
+				$this->debugFile=fopen($in, 'a');
+			else
+				$this->debugFile=null;
 		}
 
 		/**
@@ -1167,6 +1187,7 @@
 
 			// where msg is an xmlrpcmsg
 			$msg->debug=$this->debug;
+			$msg->debugFile=$this->debugFile;
 
 			if($method == 'https')
 			{
@@ -1365,12 +1386,8 @@
 				strlen($payload) . "\r\n\r\n" .
 				$payload;
 
-			if($this->debug > 1)
-			{
-				print "<PRE>\n---SENDING---\n" . htmlentities($op) . "\n---END---\n</PRE>";
-				// let the client see this now in case http times out...
-				flush();
-			}
+			// let the client see this now in case http times out...
+			_xmlrpc_debug("<PRE>\n---SENDING---\n" . htmlentities($op) . "\n---END---\n</PRE>", 2, $this->debug, $this->debugFile);
 
 			if($timeout>0)
 			{
@@ -1509,12 +1526,8 @@
 				$encoding_hdr = '';
 			}
 
-			if($this->debug > 1)
-			{
-				print "<PRE>\n---SENDING---\n" . htmlentities($payload) . "\n---END---\n</PRE>";
-				// let the client see this now in case http times out...
-				flush();
-			}
+			// let the client see this now in case http times out...
+			_xmlrpc_debug("<PRE>\n---SENDING---\n" . htmlentities($payload) . "\n---END---\n</PRE>", 2, $this->debug, $this->debugFile);
 
 			if(!$keepalive || !$this->xmlrpc_curl_handle)
 			{
@@ -1535,6 +1548,9 @@
 			if($this->debug)
 			{
 				curl_setopt($curl, CURLOPT_VERBOSE, 1);
+				//write debug output to file instead of the screen
+				if(!is_null($this->debugFile) && is_resource($this->debugFile))
+					curl_setopt($curl, CURLOPT_STDERR, $this->debugFile);
 			}
 			curl_setopt($curl, CURLOPT_USERAGENT, $this->user_agent);
 			// required for XMLRPC: post the data
@@ -1675,10 +1691,11 @@
 
 			if ($this->debug > 1)
 			{
-				print "<PRE>\n---CURL INFO---\n";
+				$debugText = "<PRE>\n---CURL INFO---\n";
 				foreach(curl_getinfo($curl) as $name => $val)
-					 print $name . ': ' . htmlentities($val). "\n";
-				print "---END---\n</PRE>";
+					 $debugText .= $name . ': ' . htmlentities($val). "\n";
+				$debugText .= "---END---\n</PRE>";
+				_xmlrpc_debug($debugText, 2, $this->debug, $this->debugFile);
 			}
 
 			if(!$result) /// @todo we should use a better check here - what if we get back '' or '0'?
@@ -2095,6 +2112,7 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 		var $methodname;
 		var $params=array();
 		var $debug=0;
+		var $debugFile=null;
 		var $content_type = 'text/xml';
 
 		/**
@@ -2413,16 +2431,17 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 
 				if($this->debug && count($GLOBALS['_xh']['headers']))
 				{
-					print '<PRE>';
+					$debugText = '<PRE>';
 					foreach($GLOBALS['_xh']['headers'] as $header => $value)
 					{
-						print htmlentities("HEADER: $header: $value\n");
+						$debugText .= htmlentities("HEADER: $header: $value\n");
 					}
 					foreach($GLOBALS['_xh']['cookies'] as $header => $value)
 					{
-						print htmlentities("COOKIE: $header={$value['value']}\n");
+						$debugText .= htmlentities("COOKIE: $header={$value['value']}\n");
 					}
-					print "</PRE>\n";
+					$debugText .= "</PRE>\n";
+					_xmlrpc_debug($debugText, 1, $this->debug, $this->debugFile);
 				}
 
 				// if CURL was used for the call, http headers have been processed,
@@ -2453,14 +2472,12 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 								if($GLOBALS['_xh']['headers']['content-encoding'] == 'deflate' && $degzdata = @gzuncompress($data))
 								{
 									$data = $degzdata;
-									if($this->debug)
-									print "<PRE>---INFLATED RESPONSE---[".strlen($data)." chars]---\n" . htmlentities($data) . "\n---END---</PRE>";
+									_xmlrpc_debug("<PRE>---INFLATED RESPONSE---[".strlen($data)." chars]---\n" . htmlentities($data) . "\n---END---</PRE>", 1, $this->debug, $this->debugFile);
 								}
 								elseif($GLOBALS['_xh']['headers']['content-encoding'] == 'gzip' && $degzdata = @gzinflate(substr($data, 10)))
 								{
 									$data = $degzdata;
-									if($this->debug)
-									print "<PRE>---INFLATED RESPONSE---[".strlen($data)." chars]---\n" . htmlentities($data) . "\n---END---</PRE>";
+									_xmlrpc_debug("<PRE>---INFLATED RESPONSE---[".strlen($data)." chars]---\n" . htmlentities($data) . "\n---END---</PRE>", 1, $this->debug, $this->debugFile);
 								}
 								else
 								{
@@ -2495,11 +2512,8 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 		*/
 		function &parseResponse($data='', $headers_processed=false, $return_type='xmlrpcvals')
 		{
-			if($this->debug)
-			{
-				//by maHo, replaced htmlspecialchars with htmlentities
-				print "<PRE>---GOT---\n" . htmlentities($data) . "\n---END---\n</PRE>";
-			}
+			//by maHo, replaced htmlspecialchars with htmlentities
+			_xmlrpc_debug("<PRE>---GOT---\n" . htmlentities($data) . "\n---END---\n</PRE>", 1, $this->debug, $this->debugFile);
 
 			if($data == '')
 			{
@@ -2537,7 +2551,7 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 					$start += strlen('<!-- SERVER DEBUG INFO (BASE64 ENCODED):');
 					$end = strpos($data, '-->', $start);
 					$comments = substr($data, $start, $end-$start);
-					print "<PRE>---SERVER DEBUG INFO (DECODED) ---\n\t".htmlentities(str_replace("\n", "\n\t", base64_decode($comments)))."\n---END---\n</PRE>";
+					_xmlrpc_debug("<PRE>---SERVER DEBUG INFO (DECODED) ---\n\t".htmlentities(str_replace("\n", "\n\t", base64_decode($comments)))."\n---END---\n</PRE>", 1, $this->debug, $this->debugFile);
 				}
 			}
 
@@ -2631,10 +2645,7 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 				error_log($errstr);
 				$r=new xmlrpcresp(0, $GLOBALS['xmlrpcerr']['invalid_return'], $GLOBALS['xmlrpcstr']['invalid_return'].' ('.$errstr.')');
 				xml_parser_free($parser);
-				if($this->debug)
-				{
-					print $errstr;
-				}
+				_xmlrpc_debug($errstr,1,$this->debug, $this->debugFile);
 				$r->hdrs = $GLOBALS['_xh']['headers'];
 				$r->_cookies = $GLOBALS['_xh']['cookies'];
 				$r->raw_data = $raw_data;
@@ -2664,15 +2675,10 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 			}
 			else
 			{
-				if ($this->debug)
-				{
-					print "<PRE>---PARSED---\n";
-					// somehow htmlentities chokes on var_export, and some full html string...
-					//print htmlentitites(var_export($GLOBALS['_xh']['value'], true));
-					print htmlspecialchars(var_export($GLOBALS['_xh']['value'], true));
-					print "\n---END---</PRE>";
-				}
-
+				// somehow htmlentities chokes on var_export, and some full html string...
+				//print htmlentitites(var_export($GLOBALS['_xh']['value'], true));
+				_xmlrpc_debug("<PRE>---PARSED---\n".htmlspecialchars(var_export($GLOBALS['_xh']['value'], true))."\n---END---</PRE>",1,$this->debug,$this->debugFile);
+				
 				// note that using =& will raise an error if $GLOBALS['_xh']['st'] does not generate an object.
 				$v =& $GLOBALS['_xh']['value'];
 
@@ -3784,6 +3790,29 @@ xmlrpc_encode_entitites($this->errstr, $GLOBALS['xmlrpc_internalencoding'], $cha
 					if (in_array($allowed, $charset_supersets[$encoding]))
 						return true;
 				return false;
+		}
+	}
+	
+	/**
+	 * A helper method to write debug output either to a file or to the screen of the user
+	 * @param string $debugText the debug text to be printed
+	 * @param integer $reqDebugLevel the required debug level if this is higher than $actDebugLevel this function will not print anything 
+	 * @param integer $actDebugLevel the current debug level
+	 * @param resource $debugFile the resource handle to the file to write the $debugText to, if the resource is not valid the programm will print to screen
+	 * @access private only to be used inside of this file
+	 */
+	function _xmlrpc_debug($debugText, $reqDebugLevel, $actDebugLevel, $debugFile) {
+		if($reqDebugLevel > $actDebugLevel)
+			return;
+		
+		if(!is_null($debugFile) && is_resource($debugFile)){
+			//wrtie the error to the logfile
+			fwrite($debugFile, $debugText.PHP_EOL);
+		}
+		else{
+			print $debugText;
+			// send the error message directly to the screen
+			flush();
 		}
 	}
 
