@@ -21,6 +21,7 @@
 			{$web->getSize($clau)}
 		</td>
 		<td>
+			<div class="file_percent"><div  class="file_percentBar" style="width: {$file.percent}%;">&nbsp;</div></div>
 			{$file.percent}%
 		</td>
 		<td>

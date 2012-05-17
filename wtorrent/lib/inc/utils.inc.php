@@ -26,6 +26,7 @@ function stringForJavascript($in_string) {
 }
 function autoload( )
 {
+	$str = '';
 	foreach( func_get_args( ) as $dir )
 	{
 		$str .= 'if(file_exists(\'' . $dir . '/\' . $file)) require_once(\'' . $dir . '/\' . $file);';
