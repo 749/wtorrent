@@ -13,3 +13,10 @@
 
 	</div>
 </div>
+{literal}
+<script type="text/javascript">
+<!--
+	$('close_m').onclick = (function (frame) { return function () { var f = $(frame); if('fade' in f) { f.fade(); } else { f.hide(); } } })('messages_box');
+//-->
+</script>
+{/literal}

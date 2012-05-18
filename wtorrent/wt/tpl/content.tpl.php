@@ -17,10 +17,3 @@
 	
 </div>
 {/if}
-{literal}
-<script type="text/javascript">
-<!--
-	$('close_m').onclick = (function (frame) { return function () { $(frame).hide(); } })('messages_box');
-//-->
-</script>
-{/literal}
