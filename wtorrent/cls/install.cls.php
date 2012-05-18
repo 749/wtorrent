@@ -104,9 +104,9 @@ class install extends Web
 	/* try the config before giving the option to save it */
 	private function tryConfig($options)
 	{
-		if(!is_writable('conf/user.conf.php'))
+		if((is_file('conf/user.conf.php') && !is_writable('conf/user.conf.php')) || !is_writeable('conf/'))
 		{
-			$this->addMessage($this->str['config_install_err']);
+			$this->addMessage($this->_str['config_install_err']);
 		}
 		if(!is_readable(DIR_LANG . $options['language'] . '.txt'))
 		{
@@ -114,6 +114,7 @@ class install extends Web
 		}
 		$path = explode('/', $options['db_file']);
 		$num_folders = count($path) - 1;
+		$folder = '';
 		for($i=0;$i<$num_folders;$i++)
 		{
 			$folder .= $path[$i];
@@ -126,7 +127,7 @@ class install extends Web
 		{
 			$this->addMessage($this->_str['db_file_err']);
 		}
-		if(!$this->tryClient($options['rt_dir'], $options['rt_host'], $options['rt_port'], $options['rt_auth'], $options['rt_user'], $options['rt_passwd']))
+		if(!$this->tryClient($options['rt_dir'], $options['rt_host'], $options['rt_port'], $options['rt_auth'], $options['rt_user'], $options['rt_passwd'], $options['no_multicall']))
 		{
 			$this->addMessage($this->_str['rt_install_err']);
 		}
@@ -229,7 +230,7 @@ class install extends Web
 		else
 			return false;
 	}
-	private function tryClient($rt_dir, $rt_host, $rt_port, $rt_auth, $rt_user, $rt_passwd)
+	private function tryClient($rt_dir, $rt_host, $rt_port, $rt_auth, $rt_user, $rt_passwd, $no_multicall = true)
 	{
 		$this->client = new xmlrpc_client($rt_dir, $rt_host, $rt_port);
 
@@ -237,9 +238,9 @@ class install extends Web
 			$this->client->setCredentials($rt_user, $rt_passwd);
     
 		$this->client->return_type = 'phpvals';
-    $this->client->no_multicall = $no_multicall;
+    	$this->client->no_multicall = $no_multicall;
     	
-    $message = new xmlrpcmsg("system.pid");
+    	$message = new xmlrpcmsg("system.pid");
 		$result = $this->client->send($message);
 
 		return $this->checkError($result);
