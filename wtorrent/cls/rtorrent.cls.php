@@ -59,6 +59,7 @@ class rtorrent extends Web
 		parent::__construct( );
 		if(isset($this->_request['logout'])) $this->logout();
 		if(isset($this->_request['user_login'])) $this->login($this->_request['userf'], $this->_request['passwdf']);
+		if(parent::isJson()) $this->_jsonData->login = $this->isRegistered();
 	}
 	private function checkError($result)
 	{
@@ -68,6 +69,10 @@ class rtorrent extends Web
 			return false;
 	}
 	protected function construct( ){}
+	
+	public function isJson() {
+		return $this->isRegistered() && parent::isJson();
+	}
 
 	public function isRegistered( )
 	{

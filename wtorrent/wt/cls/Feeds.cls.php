@@ -69,6 +69,27 @@ class Feeds extends rtorrent
 		$this->feed->init();
 		$this->feed->handle_content_type();
 		$this->feed_title = $feed['title'];
+		
+		if($this->isJson()){
+			$f = new stdClass();
+		
+			$f->title = $feed['title'];
+			$f->id = $id;
+			$f->description = $this->feed->get_description();
+			$f->torrents = array();
+		
+			foreach ($this->feed->get_items() as $torrent) {
+				$t = new stdClass();
+					
+				$t->title = $torrent->get_title();
+				$t->uri = $torrent->get_link();
+				$t->time = $torrent->get_date('U');
+					
+				$f->torrents[] = $t;
+			}
+		
+			$this->_jsonData->feed = $f;
+		}
 	}
 	private function view()
 	{	
@@ -77,6 +98,8 @@ class Feeds extends rtorrent
 			$this->getIdUser()
 		);
 		$this->info = array();
+		if($this->isJson())
+			$this->_jsonData->count = count($feeds);
 		foreach ($feeds as $feed) {
 			$pie = new SimplePie();
 			$pie->set_feed_url($feed['url']);
@@ -93,12 +116,34 @@ class Feeds extends rtorrent
 					array_pop($items);
 				}
 			}
-			$this->info[] = array(
+			$info = array(
 				'title' => (empty($feed['title']) ? $pie->get_title() : $feed['title']),
 				'id' => $feed['id'],
 				'description' => $pie->get_description(),
 				'news' => $items,
 			);
+			if($this->isJson()){
+				$f = new stdClass();
+				
+				$f->title = $info['title'];
+				$f->id = $info['id'];
+				$f->description = $info['description'];
+				$f->torrents = array();
+				
+				foreach ($info['news'] as $torrent) {
+					$t = new stdClass();
+					
+					$t->title = $torrent->get_title();
+					$t->uri = $torrent->get_link();
+					$t->time = $torrent->get_date('U');
+					
+					$f->torrents[] = $t;
+				}
+				
+				$this->_jsonData->feeds[] = $f;
+			}
+				
+			$this->info[] = $info;
 		}
 	}
 	private function changeDir()

@@ -107,6 +107,76 @@ class ListT extends rtorrent
 			if($this->_tpl == 'ajax')
 				$this->setJSON();
 		}
+		
+		if($this->isJson()){
+			$fields = array('all', 'basic', 'status', 'name', 'hash', 'private', 'message', 'progress', 'eta', 'ratio', 'data', 'dataup', 'datadown', 'speed', 'speedup', 'speeddown', 'peer', 'seed');
+			
+			$trequested = array();
+			if(trim($this->_request['detail']) != ''){
+				$trequested = explode(',', strtolower(trim($this->_request['detail'])));
+			}
+			$requested = array();
+			foreach ($trequested as $req) {
+				// filter the requested variables to the defined ones
+				if(in_array($req, $fields))
+					$requested[] = $req;
+			}
+			if(empty($requested)){
+				// at least send the basic info, if the user doesn't request otherwise
+				$requested = array('basic');
+			}
+			unset($trequested, $fields);
+			// the number of torrents
+			$this->_jsonData->count = count($hashes);
+			// the array for the torrents to be sent by json
+			$this->_jsonData->torrents = array();
+			foreach ($this->getVisibleHashes() as $hash) {
+				$torrent = new stdClass();
+				
+				if(in_array('hash', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+					$torrent->hash = $hash;
+				if(in_array('name', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+					$torrent->name = $this->getName($hash);
+				if(in_array('status', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+					$torrent->status = $this->getTstate($hash);
+				if(in_array('progress', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+					$torrent->progress = $this->getPercentRaw($hash);
+				if(in_array('private', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+					$torrent->private = $this->torrents[$hash]->get_private();
+				
+				if(in_array('eta', $requested) || in_array('all', $requested))
+					$torrent->eta = $this->getETA($hash);
+				if(in_array('ratio', $requested) || in_array('all', $requested))
+					$torrent->ratio = $this->getRatio($hash);
+				
+				if(in_array('datadone', $requested) || in_array('datasize', $requested) || in_array('data', $requested))
+					$torrent->data = new stdClass();
+				if(in_array('datadone', $requested) || in_array('data', $requested) || in_array('all', $requested))
+					$torrent->data->done = $this->getDone($hash);
+				if(in_array('datasize', $requested) || in_array('data', $requested) || in_array('all', $requested))
+					$torrent->data->size = $this->getSize($hash);
+				
+				if(in_array('speedup', $requested) || in_array('speeddown', $requested) || in_array('speed', $requested))
+					$torrent->speed = new stdClass();
+				if(in_array('speedup', $requested) || in_array('speed', $requested) || in_array('all', $requested))
+					$torrent->speed->up = $this->getUpRate($hash);
+				if(in_array('speeddown', $requested) || in_array('speed', $requested) || in_array('all', $requested))
+					$torrent->speed->down = $this->getDownRate($hash);
+				
+				if(in_array('peer', $requested) || in_array('all', $requested)){
+					$torrent->peer = new stdClass(); 
+					$torrent->peer->total = $this->getTotalPeers($hash);
+					$torrent->peer->connected = $this->getConnPeers($hash);
+				}
+				if(in_array('seed', $requested) || in_array('all', $requested)){
+					$torrent->seed = new stdClass();
+					$torrent->seed->total = $this->getTotalSeeds($hash);
+					$torrent->seed->connected = $this->getConnSeeds($hash);
+				}
+				
+				$this->_jsonData->torrents[] = $torrent;
+			}
+		}
 	}
 	
 	public function setJSON()
@@ -169,6 +239,21 @@ class ListT extends rtorrent
 				$i++;
 		}		
 		return $i;
+	}
+	/**
+	 * This function will return an array of hashes that can be seen by the current user, no matter whether their private or not
+	 */
+	public function getVisibleHashes()
+	{
+		$hashes = $this->getHashes();
+		$return = array();
+		if(!empty($hashes))
+		{
+			foreach($hashes as $hash)
+				if($this->torrents[$hash]->get_private() === false || $this->torrents[$hash]->get_owner() == $this->getIdUser())
+				$return[] = $hash;
+		}
+		return $return;
 	}
 	public function getViews()
 	{
@@ -238,9 +323,13 @@ class ListT extends rtorrent
 	{
 		return round($this->torrents[$hash]->get_up_rate()/1024,2);
 	}
+	public function getPercentRaw($hash)
+	{
+		return $this->torrents[$hash]->get_completed_chunks() / $this->torrents[$hash]->get_size_chunks();
+	}
 	public function getPercent($hash)
 	{
-		return floor(($this->torrents[$hash]->get_completed_chunks()/$this->torrents[$hash]->get_size_chunks())*100);
+		return floor(($this->getPercentRaw($hash))*100);
 	}
 	public function getRatio($hash)
 	{

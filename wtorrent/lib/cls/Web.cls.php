@@ -42,6 +42,8 @@ abstract class Web
 	protected $_json			= null;
 	protected $_tpl				= null;
 	protected $_ajax			= false;
+	
+	protected $_jsonData		= null;
 
 	public function __construct($install = false)
 	{
@@ -87,6 +89,24 @@ abstract class Web
 		$this->loadLanguage( $this->getLang( ) );
 		if(isset($this->_request['ajax']))	$this->_ajax = true;
 		if(isset($this->_request['tpl']))		$this->_tpl = $this->_request['tpl'];
+		
+		if(Web::isJson()){
+			$this->_jsonData = new stdClass();
+			if(isset($this->_request['json']) && $this->_request['json'] == 'version'){
+				$this->_jsonData->prog = "wTorrent";
+				$this->_jsonData->version = "0.1.0";
+				$this->_jsonData->json = new stdClass();
+				$this->_jsonData->json->version = 1;
+			}
+		}
+	}
+	
+	/**
+	 * This function will return true if the user wants a json response
+	 * @return boolean true if the template that was requested by the user is "json"
+	 */
+	public function isJson() {
+		return ($this->_tpl == 'json');
 	}
 
 	/**
@@ -129,7 +149,19 @@ abstract class Web
 
 		// Display HTML Page
 		if( isset( $this->_request['tpl'] ) ) $tpl = $this->_request['tpl'];
+		if( $this->isJson()) {
+			$this->_jsonData->messages = $this->message;
+		}
 		$this->_smarty->display( $tpl.'.tpl.php' );
+	}
+	
+	/**
+	 * returns the data to be sent to the client encoded in json
+	 * 
+	 * @return string the json encoded string of data
+	 */
+	final public function getJson() {
+		return $this->_json->encode($this->_jsonData);
 	}
 
 	/**
