@@ -7,7 +7,7 @@
 		</div>
 		<div style="width: 100%; height: 40px; padding-left: 20px; text-align: left;">
 			<div style="width: 150px; float: left;font-size: 12px; font-weight: bold; margin-top: 3px;">{$str.torrent_url}:</div>
-			<div style="width: 500px; float: left; text-align: left;"><input name="torrenturl" type="text" size="60" /></div>
+			<div style="float: left; text-align: left;"><input name="torrenturl" type="text" size="60" /> <span style="margin-left: 5px;">({$str.info_add_magnet})</span></div>
 		</div>
 		<div style="width: 100%; height: 40px; padding-left: 20px; text-align: left;">
 			<div style="width: 150px; float: left;font-size: 12px; font-weight: bold; margin-top: 3px;">{$str.down_dir}:</div>

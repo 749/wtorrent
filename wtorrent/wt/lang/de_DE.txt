@@ -13,6 +13,7 @@ err_add_torrent = Fehler beim Hinzufügen des Torrents
 err_add_dir = Fehler beim Erstellen der Datei im angegebenen Verzeichnis, bitte Berechtigungen kontrollieren
 err_add_file = Fehler: Torrent existiert bereits im Torrent-Verzeichnis
 info_add_upload = Voller Verzeichnis-Pfad, endet mit /
+info_add_magnet = Unterstrützt auch Magnet Links
 
 low = Niedrig
 normal = Normal

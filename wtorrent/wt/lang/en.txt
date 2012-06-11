@@ -14,6 +14,7 @@ err_add_dir = Error: Impossible to create file on given directory, please check 
 err_add_file = Error: File already exists in torrent directory, can't create .torrent
 err_not_torrent = This is not a torrent file
 info_add_upload = full directory path, end with /
+info_add_magnet = supports magnet links
 
 low = Low
 normal = Normal
