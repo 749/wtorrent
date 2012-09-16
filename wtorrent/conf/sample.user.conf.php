@@ -24,13 +24,17 @@ define( 'LANGUAGE',             'en');
 // SQLite database file (set folder permision 0777 or chmod to httpd server) (wTorrent will create database when running install.php)
 define( 'DB_FILE',			'db/database.db');
 
-// Host or IP to connect to rTorrent (lighttpd or apache host and port)
+//set to 'socket' to use unix sockets to connect instead of http
+define( 'RT_METHOD',			'');
+// Host or IP to connect to rTorrent (lighttpd or apache host and port) ignored if method is 'socket'
 define( 'RT_HOST',			'localhost');
 define( 'RT_PORT',			80);
 // This is the scgi.server folder set in lighttpd or apache conf
+// path to the socket file if method is 'socket'
 define( 'RT_DIR',			'RPC2/');
 // Set this to false if you don't have any autentification method to access http://<your server>/<RT_DIR>
 // This is NOT the user to access wtorrent, your user will be set up after editing this file
+// ignored if method is 'socket'
 define( 'RT_AUTH',			true);
 define( 'RT_USER',			'my_user');
 define( 'RT_PASSWD',		'my_password');

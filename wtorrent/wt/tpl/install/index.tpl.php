@@ -6,7 +6,26 @@
   <title>{$TITLE}</title>
 	<link rel="stylesheet" href="{$DIR_CSS}reset.css" type="text/css" media="all" charset="utf8" />
 	<link rel="stylesheet" href="{$DIR_CSS}estil.css" type="text/css" media="all" charset="utf8" />
+	<script src="{$DIR_JS}prototype.js" type="text/javascript" charset="utf-8"></script>
+	<script src="{$DIR_JS}scriptaculous/scriptaculous.js?load=effects" type="text/javascript" charset="utf-8"></script>
 	<link rel="shortcut icon" type="image/x-icon" href="{$DIR_IMG}favicon.ico" />
+{literal}
+	<script type="text/javascript">
+	function switchMethod(value){
+		var visible = (value != '');
+		$('rt_host').disabled = visible;
+		$('rt_port').disabled = visible;
+		$('rt_auth').disabled = visible;
+		switchAuth((visible)? 0 : $('rt_auth').value);
+	}
+	function switchAuth(value){
+		var visible = (value != 1);
+		$('rt_user').disabled = visible;
+		$('rt_passwd').disabled = visible;
+	}
+	Event.observe(window, 'load', function(){switchMethod('{/literal}{$web->getOption('rt_method')}{literal}')});
+	</script>
+{/literal}
 </head>
 
 <body>
@@ -34,6 +53,13 @@
 							<input type="text" name="db_file" value="{$web->getOption('db_file')}" id="db_file" />
 						</div>
 						<div class="row clearfix">
+							<label for="rt_method">{$str.rt_method_info}</label> 
+							<select name="rt_method" onchange="switchMethod(this.value)">
+								<option value=""{if $web->getOption('rt_method') eq ''} selected="selected"{/if}>{$str.rt_method_default}</option>
+								<option value="socket"{if $web->getOption('rt_method') eq 'socket'} selected="selected"{/if}>{$str.rt_method_socket}</option>
+							</select>
+						</div>
+						<div class="row clearfix">
 							<label for="rt_host">{$str.rt_host_info}</label> 
 							<input type="text" name="rt_host" value="{$web->getOption('rt_host')}" id="rt_host" />
 						</div>
@@ -47,7 +73,7 @@
 						</div>
 						<div class="row clearfix">
 							<label for="rt_auth">{$str.rt_auth_info}</label>
-							<select name="rt_auth">
+							<select name="rt_auth" id="rt_auth" onchange="switchAuth(this.value)">
 								<option value="1" {if $web->getOption('rt_auth')}selected="selected"{/if}>{$str.true}</option>
 								<option value="0" {if !$web->getOption('rt_auth')}selected="selected"{/if}>{$str.false}</option>
 							</select>

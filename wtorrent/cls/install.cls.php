@@ -25,6 +25,7 @@ class install extends Web
 	private static $options = array(
 		'language' => 'string',
 		'db_file' => 'string',
+		'rt_method' => 'string',
 		'rt_host' => 'string',
 		'rt_port' => 'integer',
 		'rt_dir' => 'string',
@@ -42,6 +43,7 @@ class install extends Web
 	private $defaults = array(
 		'language' => 'en',
 		'db_file' => 'db/database.db',
+		'rt_method' => '',
 		'rt_host' => 'localhost',
 		'rt_port' => 80,
 		'rt_dir' => '/RPC2',
@@ -64,15 +66,16 @@ class install extends Web
 		$this->save = false;
 		if(isset($this->_request))
 		{
+			$opts = $this->createOptionsArray();
 			if(array_key_exists('try', $this->_request))
 			{
-				$this->tryConfig($this->createOptionsArray());
+				$this->tryConfig($opts);
 			}
 			if(array_key_exists('save', $this->_request))
 			{
 				if(!empty($this->_request['user']) && !empty($this->_request['passwd']))
 				{
-					$this->saveConfig($this->createOptionsArray());
+					$this->saveConfig($opts);
 				} else {
 					$this->addMessage($this->_str['missing_user']);
 				}
@@ -127,9 +130,10 @@ class install extends Web
 		{
 			$this->addMessage($this->_str['db_file_err']);
 		}
-		if(!$this->tryClient($options['rt_dir'], $options['rt_host'], $options['rt_port'], $options['rt_auth'], $options['rt_user'], $options['rt_passwd'], $options['no_multicall']))
+		$result = $this->tryClient($options['rt_dir'], $options['rt_host'], $options['rt_port'], $options['rt_method'], $options['rt_auth'], $options['rt_user'], $options['rt_passwd'], $options['no_multicall']);
+		if(!$this->checkError($result))
 		{
-			$this->addMessage($this->_str['rt_install_err']);
+			$this->addMessage($this->_str['rt_install_err'].': "'.$result->errstr.'"');
 		}
 		if(!is_writable($options['dir_torrents']))
 		{
@@ -230,9 +234,9 @@ class install extends Web
 		else
 			return false;
 	}
-	private function tryClient($rt_dir, $rt_host, $rt_port, $rt_auth, $rt_user, $rt_passwd, $no_multicall = true)
+	private function tryClient($rt_dir, $rt_host, $rt_port, $rt_method, $rt_auth, $rt_user, $rt_passwd, $no_multicall = true)
 	{
-		$this->client = new xmlrpc_client($rt_dir, $rt_host, $rt_port);
+		$this->client = new xmlrpc_unix_client($rt_dir, $rt_host, $rt_port, $rt_method);
 
 		if($rt_auth)
 			$this->client->setCredentials($rt_user, $rt_passwd);
@@ -243,7 +247,7 @@ class install extends Web
     	$message = new xmlrpcmsg("system.pid");
 		$result = $this->client->send($message);
 
-		return $this->checkError($result);
+		return $result;
 	}
 	/* Basic defines for wTorrent to work that are in user.conf.php */
 	final public static function setDefines()

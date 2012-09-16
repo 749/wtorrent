@@ -144,7 +144,7 @@ class rtorrent extends Web
 	}
 	public function setClient()
 	{
-		$this->client = new xmlrpc_client(RT_DIR, RT_HOST, RT_PORT);
+		$this->client = new xmlrpc_unix_client(RT_DIR, RT_HOST, RT_PORT, RT_METHOD);
 		$this->multicall = new multicall($this->client, $this->data);
 
 		if(RT_AUTH)
