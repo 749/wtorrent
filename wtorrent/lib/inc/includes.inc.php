@@ -24,7 +24,7 @@ require_once( 'cls/rtorrent.cls.php' );
 require_once( 'cls/torrent.cls.php' );
 require_once( 'cls/multicall.cls.php' );
 //require_once( 'cls/install.cls.php' );
-require_once( 'lib/xmlrpc/xmlrpc.inc.php' );
+require_once( 'lib/xmlrpc/xmlrpc_unix.inc.php');
 require_once( 'lib/inc/utils.inc.php' );
 require_once( 'lib/inc/string.inc.php' );
 require_once( 'lib/bdecode/class.bdecode.php' );
