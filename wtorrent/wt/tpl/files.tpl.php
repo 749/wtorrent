@@ -9,10 +9,11 @@
 	</tr>	
 	{foreach key=clau item=file from=$web->getFiles()}
 	{assign var=clau value=$clau}
-	<tr>
+	<tr onclick="cb = $(this).down('input'); cb.checked=!cb.checked">
 		<td class="file_list_first">
-			<input type="checkbox" id="{$web->getHash()|cat:'_'|cat:$clau}" class="files{$web->getHash()}" />&nbsp;&nbsp;
-			<label for="{$web->getHash()|cat:'_'|cat:$clau}">{$file.name}</label>
+			<label for="{$web->getHash()|cat:'_'|cat:$file.id}">
+			<input type="checkbox" id="{$web->getHash()|cat:'_'|cat:$file.id}" class="files{$web->getHash()}" />&nbsp;&nbsp;
+			{$file.name}</label>
 		</td>
 		<td>
 			{$web->getDone($clau)}
@@ -21,7 +22,7 @@
 			{$web->getSize($clau)}
 		</td>
 		<td>
-			<div class="file_percent"><div  class="file_percentBar" style="width: {$file.percent}%;">&nbsp;</div></div>
+			<div class="file_percent"><div class="file_percentBar" style="width: {$file.percent}%;">&nbsp;</div></div>
 			{$file.percent}%
 		</td>
 		<td>

@@ -2,7 +2,7 @@
 	<b style="color: #4C8CC4;">Trackers:</b>
 </div>*}
 <form method="post" action="{$SRC_INDEX}?cls={$web->getCls()}&tpl=details&hash={$web->getHash()}">
-	<table style="border-collapse: collapse; width: 100%; margin-left: auto; margin-right: auto; border-bottom: 1px solid #d4d4d4;">
+	<table class="tracker_list">
 		<tr style="background-color: #F1F3F5; border-bottom: 1px solid #d4d4d4;">
 			<td style="width: 20px;">&nbsp;</td>
 			<td style="width: 16px;">&nbsp;</td>
@@ -11,18 +11,18 @@
 			<td style="width: 35px; padding: 5px; font-family: arial; font-size: 11px; font-weight: bold; text-align: center;">{$str.tb_peers}</td>
 		</tr>	
 		{foreach key=clau item=tracker from=$web->getTrackers()}
-		<tr>
-			<td style="text-align: center;"><input type="checkbox" class="trackers{$web->getHash()}" id="{$clau}" /></td>
-			<td style="text-align: center; margin: auto;">
+		<tr onclick="cb = $(this).down('input'); cb.checked=!cb.checked">
+			<td><input type="checkbox" class="trackers{$web->getHash()}" id="{$clau}" /></td>
+			<td style="margin: auto;">
 				{if $tracker.enabled eq 1}<img src="{$DIR_IMG}bullet_green.png" style="margin: auto; margin-top: 5px;" />{else}<img src="{$DIR_IMG}bullet_red.png" style="margin: auto;" />{/if}
 			</td>
-			<td style="font-family: arial; font-size: 11px; padding: 2px 5px 2px 10px; text-align: left;">
+			<td style="padding: 2px 5px 2px 10px; text-align: left;">
 				{$tracker.url}
 			</td>
-			<td style="font-family: arial; font-size: 11px; text-align: center;">
+			<td style="font-family: arial; font-size: 11px;">
 				{$tracker.scrape_completed}
 			</td>
-			<td style="font-family: arial; font-size: 11px; text-align: center;">
+			<td style="font-family: arial; font-size: 11px;">
 				{$tracker.scrape_incomplete}
 			</td>
 		</tr>
