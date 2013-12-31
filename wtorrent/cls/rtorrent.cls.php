@@ -60,6 +60,13 @@ class rtorrent extends Web
 		if(isset($this->_request['logout'])) $this->logout();
 		if(isset($this->_request['user_login'])) $this->login($this->_request['userf'], $this->_request['passwdf']);
 		if(parent::isJson()) $this->_jsonData->login = $this->isRegistered();
+		if($this->isJson() && $this->setClient()){
+			$this->_jsonData->glob = new stdClass();
+			$this->_jsonData->glob->space_total = disk_total_space(DIR_DOWNLOAD);
+			$this->_jsonData->glob->space_used = disk_total_space(DIR_DOWNLOAD) - disk_free_space(DIR_DOWNLOAD);
+			$this->_jsonData->glob->speed_down = $this->get_down_rate();
+			$this->_jsonData->glob->speed_up = $this->get_up_rate();
+		}
 	}
 	private function checkError($result)
 	{
