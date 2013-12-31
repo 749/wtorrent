@@ -109,7 +109,7 @@ class ListT extends rtorrent
 		}
 		
 		if($this->isJson()){
-			$fields = array('all', 'basic', 'status', 'name', 'hash', 'private', 'message', 'progress', 'eta', 'ratio', 'data', 'dataup', 'datadown', 'speed', 'speedup', 'speeddown', 'peer', 'seed');
+			$fields = array('all', 'android', 'basic', 'status', 'name', 'hash', 'private', 'message', 'progress', 'eta', 'ratio', 'data', 'dataup', 'datadown', 'speed', 'speedup', 'speeddown', 'peer', 'seed');
 			
 			$trequested = array();
 			if(trim($this->_request['detail']) != ''){
@@ -133,42 +133,53 @@ class ListT extends rtorrent
 			foreach ($this->getVisibleHashes() as $hash) {
 				$torrent = new stdClass();
 				
-				if(in_array('hash', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+				if(in_array('hash', $requested) || in_array('all', $requested) || in_array('basic', $requested) || in_array('android', $requested))
 					$torrent->hash = $hash;
-				if(in_array('name', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+				if(in_array('name', $requested) || in_array('all', $requested) || in_array('basic', $requested) || in_array('android', $requested))
 					$torrent->name = $this->getName($hash);
-				if(in_array('status', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+				if(in_array('status', $requested) || in_array('all', $requested) || in_array('basic', $requested) || in_array('android', $requested)){
 					$torrent->status = $this->getTstate($hash);
+					$torrent->message = $this->getMessage($hash);
+				}
 				if(in_array('progress', $requested) || in_array('all', $requested) || in_array('basic', $requested))
 					$torrent->progress = $this->getPercentRaw($hash);
-				if(in_array('private', $requested) || in_array('all', $requested) || in_array('basic', $requested))
+				if(in_array('private', $requested) || in_array('all', $requested) || in_array('basic', $requested) || in_array('android', $requested))
 					$torrent->private = $this->torrents[$hash]->get_private();
 				
 				if(in_array('eta', $requested) || in_array('all', $requested))
 					$torrent->eta = $this->getETA($hash);
-				if(in_array('ratio', $requested) || in_array('all', $requested))
+				if(in_array('ratio', $requested) || in_array('all', $requested) || in_array('android', $requested))
 					$torrent->ratio = $this->getRatio($hash);
+					
+				if(in_array('chunkinfo', $requested) || in_array('all', $requested) || in_array('android', $requested)){
+					$torrent->chunkinfo = new stdClass();
+					$torrent->chunkinfo->completed = $this->torrents[$hash]->get_completed_chunks();
+					$torrent->chunkinfo->total = $this->torrents[$hash]->get_size_chunks();
+					$torrent->chunkinfo->size = $this->torrents[$hash]->get_chunk_size();
+				}
 				
-				if(in_array('datadone', $requested) || in_array('datasize', $requested) || in_array('data', $requested))
+				if(in_array('datadone', $requested) || in_array('datasize', $requested) || in_array('data', $requested) || in_array('all', $requested)) {
 					$torrent->data = new stdClass();
-				if(in_array('datadone', $requested) || in_array('data', $requested) || in_array('all', $requested))
-					$torrent->data->done = $this->getDone($hash);
-				if(in_array('datasize', $requested) || in_array('data', $requested) || in_array('all', $requested))
-					$torrent->data->size = $this->getSize($hash);
+					if(in_array('datadone', $requested) || in_array('data', $requested) || in_array('all', $requested))
+						$torrent->data->done = $this->getDone($hash);
+					if(in_array('datasize', $requested) || in_array('data', $requested) || in_array('all', $requested))
+						$torrent->data->size = $this->getSize($hash);
+				}
 				
-				if(in_array('speedup', $requested) || in_array('speeddown', $requested) || in_array('speed', $requested))
+				if(in_array('speedup', $requested) || in_array('speeddown', $requested) || in_array('speed', $requested) || in_array('all', $requested) || in_array('android', $requested)){
 					$torrent->speed = new stdClass();
-				if(in_array('speedup', $requested) || in_array('speed', $requested) || in_array('all', $requested))
-					$torrent->speed->up = $this->getUpRate($hash);
-				if(in_array('speeddown', $requested) || in_array('speed', $requested) || in_array('all', $requested))
-					$torrent->speed->down = $this->getDownRate($hash);
+					if(in_array('speedup', $requested) || in_array('speed', $requested) || in_array('all', $requested) || in_array('android', $requested))
+						$torrent->speed->up = $this->getUpRate($hash);
+					if(in_array('speeddown', $requested) || in_array('speed', $requested) || in_array('all', $requested) || in_array('android', $requested))
+						$torrent->speed->down = $this->getDownRate($hash);
+				}
 				
-				if(in_array('peer', $requested) || in_array('all', $requested)){
+				if(in_array('peer', $requested) || in_array('all', $requested) || in_array('android', $requested)){
 					$torrent->peer = new stdClass(); 
 					$torrent->peer->total = $this->getTotalPeers($hash);
 					$torrent->peer->connected = $this->getConnPeers($hash);
 				}
-				if(in_array('seed', $requested) || in_array('all', $requested)){
+				if(in_array('seed', $requested) || in_array('all', $requested) || in_array('android', $requested)){
 					$torrent->seed = new stdClass();
 					$torrent->seed->total = $this->getTotalSeeds($hash);
 					$torrent->seed->connected = $this->getConnSeeds($hash);
