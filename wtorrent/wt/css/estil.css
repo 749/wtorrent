@@ -1154,3 +1154,75 @@ h2 {
 	padding-left: 40px;
 #	margin-bottom: 10px;
 }
+
+/* Add Torrent Overlayer */
+#addTorrentOvl {
+	bottom: 0;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1;
+	display: none;
+}
+
+.filehover #addTorrentOvl, .fileup #addTorrentOvl {
+	display: block;
+}
+
+#addTorrentOvl .bg {
+	background: #fff;
+    bottom: 0;
+    left: 0;
+    opacity: 0.7;
+    position: fixed;
+    right: 0;
+    top: 0;
+}
+
+#addTorrentOvl .addBox {
+	background: #fff;
+    left: 50%;
+    margin: -74px 0 0 -260px;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    width: 500px;
+	border-radius: 15px;
+	-moz-border-radius: 15px;
+	-webkit-border-radius: 15px;
+	-webkit-box-shadow: 10px 10px 15px rgba(0,0,0,0.78);
+	-moz-box-shadow: 10px 10px 15px rgba(0,0,0,0.78);
+	box-shadow: 10px 10px 15px rgba(0,0,0,0.78);
+}
+
+#addTorrentOvl .addBox > div {
+    clear: both;
+    margin-bottom: 8px;
+    text-align: left;
+    width: 100%;
+}
+.filehover #addTorrentOvl .addBox > div {
+	display: none;
+}
+
+#addTorrentOvl .addBox > div > div {
+	float: left;
+	text-align: left;
+}
+
+#addTorrentOvl .addBox > div > div:first-child {
+	width: 25%;
+	font-size: 12px;
+	font-weight: bold;
+	margin-top: 3px;
+}
+
+#addTorrentOvl .addBox > h2 {
+	text-align: center;
+	font-size: 2.7em
+}
+
+.fileup #addTorrentOvl .addBox > h2 {
+	display: none;
+}

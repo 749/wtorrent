@@ -47,6 +47,9 @@
 <div id="loadingMessages" style="display: none;">
   {include file="comm_loading.tpl.php"}
 </div>
+{if $web->isRegistered()}
+  {include file="add_file_overlayer.tpl.php"}
+{/if}
 </body>
 
 </html>

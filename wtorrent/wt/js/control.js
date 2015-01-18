@@ -60,6 +60,55 @@ var Control = Class.create({
 				this.events.bindHandler(evt, action, this[actions[action]].bind(this));
 			}
 		}
+		
+		/* Enable File dropping if available*/
+		if (window.File && window.FileList) {
+			this.torrentFile = {};
+			this.initFileDrop();
+		}
+	},
+	initFileDrop: function() {
+		document.body.ondragover = function() {this.className = 'filehover'; return false;}
+		document.body.ondragend = function() {this.className = ''; return false;}
+		document.body.ondrop = (function(e) {
+			document.body.className = 'fileup';
+			e.preventDefault();
+			this.torrentFile = e.dataTransfer.files[0];
+			var name = this.torrentFile.name + "(" + (this.torrentFile.size/1024|0) + "Kb)";
+			$$("#addTorrentOvl .torrentfile").each(function(item){item.innerHTML = name});
+		}).bind(this);
+		var upt = this.uploadTorrent.bind(this);
+		$$('#addTorrentOvl input[name="upload_torrent"]').each(function(item){item.on("click", upt)});
+		$$('#addTorrentOvl input[name="abort"]').each(function(item){item.on("click", function(){document.body.className = '';})});
+	},
+	uploadTorrent: function() {
+		var data = new FormData();
+		data.append('uploadedfile', this.torrentFile);
+		var input = $$('#addTorrentOvl input[name="download_dir"]');
+		data.append('download_dir', input[0].value);
+		input = $$('#addTorrentOvl input[name="start_now"]');
+		data.append('start_now', (input[0].checked)? 'on': '');
+		input = $$('#addTorrentOvl input[name="private"]');
+		data.append('private', (input[0].checked)? 'on': '');
+		
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', 'index.php?cls=AddT');
+		xhr.responseType = "document";
+		xhr.onload = (function() {
+			$('messages').innerHTML = xhr.responseXML.getElementById('messages').innerHTML;
+			$('messages_box').show();
+			this.torrentFile = {};
+			this.reloadMain();
+			document.body.className = '';
+		}).bind(this);
+		xhr.onerror = (function(){
+			$('messages').innerHTML = '<p>Torrentfile not uploaded!</p>'
+			$('messages_box').show();
+			this.torrentFile = {};
+			document.body.className = '';
+		}).bind(this);
+		
+		xhr.send(data);
 	},
 	/* Event handlers */
 	/* Torrent event handler */
