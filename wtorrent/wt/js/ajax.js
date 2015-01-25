@@ -63,8 +63,9 @@ var AjaxHandler = Class.create({
 	},
 	/* Assign response functions */
 	/* Print response in main frame */
-	showResponseMain: function(originalRequest, json_data) {
+	showResponseMain: function(originalRequest) {
 		cleanTips();
+		var json_data = eval(originalRequest.getHeader('X-JSON'));
 		if(json_data)
 		{
 			var space = $('space');
