@@ -68,22 +68,86 @@ var Control = Class.create({
 		}
 	},
 	initFileDrop: function() {
-		document.body.ondragover = function() {this.className = 'filehover'; return false;}
-		document.body.ondragend = function() {this.className = ''; return false;}
+		document.body.ondragover = function(e) {/* prevent default to allow drop*/ e.preventDefault(); this.className = 'filehover'; return false;};
+		document.body.ondragenter = function(e) {this.className = 'filehover'; return false;};
+		document.body.onmouseout = function() {if(this.className == 'filehover'){this.className = '';} return false;};
+		document.body.ondragend = function() {this.className = 'filehover'; return false;};
 		document.body.ondrop = (function(e) {
-			document.body.className = 'fileup';
 			e.preventDefault();
-			this.torrentFile = e.dataTransfer.files[0];
-			var name = this.torrentFile.name + "(" + (this.torrentFile.size/1024|0) + "Kb)";
+			var name; this.torrentUrl = null; this.torrentFile = null;
+			if(!e.dataTransfer.files || e.dataTransfer.files.length < 1) {
+				/*Not Transfering a file*/
+				var link = e.dataTransfer.getData('Text');
+				if(!this.isTorrentLink(link)){
+					e.dataTransfer.dropEffect = "none";
+					document.body.className = '';
+					return;
+				}
+				this.torrentUrl = link;
+				name = link;
+			} else {
+				this.torrentFile = e.dataTransfer.files[0];
+				name = this.torrentFile.name + "(" + (this.torrentFile.size/1024|0) + "Kb)";
+			}
+			document.body.className = 'fileup';
 			$$("#addTorrentOvl .torrentfile").each(function(item){item.innerHTML = name});
 		}).bind(this);
 		var upt = this.uploadTorrent.bind(this);
 		$$('#addTorrentOvl input[name="upload_torrent"]').each(function(item){item.on("click", upt)});
 		$$('#addTorrentOvl input[name="abort"]').each(function(item){item.on("click", function(){document.body.className = '';})});
 	},
+	isTorrentLink: function(url) {
+		var matchRegex = new Array(
+			// isohunt
+			/http:\/\/.*isohunt\.com\/download\//i,
+			/http:\/\/.*bt-chat\.com\/download\.php/,
+		
+			// TorrentReactor
+			/http:\/\/dl\.torrentreactor\.net\/download.php\?/i,
+		
+			// Mininova
+			/http:\/\/www\.mininova\.org\/get\//i,
+		
+			// TorrentSpy
+			/http:\/\/ts\.searching\.com\/download\.asp\?/i,
+			/http:\/\/www\.torrentspy\.com\/download.asp\?/i,
+		
+			// Seedler
+			/http:\/\/.*seedler\.org\/download\.x\?/i,
+			
+			//demonoid
+			/http:\/\/www.demonoid.com\/files\/download\/.*/i,
+			
+			// BF + BTF
+			/http:\/\/.*\/download\.php\?torrent.*/i,
+
+			// Aeonflux Trackingsystem (TH)
+			/https:\/\/.*\/index.php\?strWebValue=torrent&strWebAction=download&id=.*/i,
+			
+			//what.cd
+			/https?:\/\/.*\/torrents.php.action=download.*/i,
+		
+			// all direct torrent links
+			/\.torrent$/,
+            
+			//all magnet links
+			/^magnet:\?/);
+
+		for (r=0; r<matchRegex.length; r++) {
+			if (url.match(matchRegex[r])) {
+				return true;
+			}
+		}
+		return false;
+	},
 	uploadTorrent: function() {
 		var data = new FormData();
-		data.append('uploadedfile', this.torrentFile);
+		if(this.torrentFile) {
+			data.append('uploadedfile', this.torrentFile);
+		}
+		if(this.torrentUrl) {
+			data.append('torrenturl', this.torrentUrl);
+		}
 		var input = $$('#addTorrentOvl input[name="download_dir"]');
 		data.append('download_dir', input[0].value);
 		input = $$('#addTorrentOvl input[name="start_now"]');
@@ -97,6 +161,17 @@ var Control = Class.create({
 		xhr.onload = (function() {
 			$('messages').innerHTML = xhr.responseXML.getElementById('messages').innerHTML;
 			$('messages_box').show();
+			// hide after 7 seconds
+			setTimeout(function() {var elt = $('messages_box');
+				if ('fade' in elt)
+				{
+					elt.fade();
+				}
+				else
+				{
+					elt.hide()
+				}
+			}, 7000);
 			this.torrentFile = {};
 			this.reloadMain();
 			document.body.className = '';
