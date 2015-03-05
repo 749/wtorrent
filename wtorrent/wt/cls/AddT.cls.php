@@ -22,11 +22,6 @@ class AddT extends rtorrent {
 		} else if (! empty ( $this->_request ['torrenturl'] )) {
 			$this->addRemoteTorrent ( $this->_request ['torrenturl'], $this->_request ['download_dir'], $this->_request ['start_now'], $this->_request ['private'] );
 		}
-		
-		if ($this->isJson ()) {
-			$this->_jsonData->dir = $this->getDir ();
-			$this->_jsonData->forceDir = $this->getForceDir ();
-		}
 	}
 	// Add remote torrent
 	private function addRemoteTorrent($url, $dir, $start_now, $private) {
@@ -38,8 +33,6 @@ class AddT extends rtorrent {
 		// Check if download directory is writable
 		if (! is_writable ( DIR_EXEC . DIR_TORRENTS )) {
 			$this->addMessage ( DIR_EXEC . DIR_TORRENTS . $this->_str ['err_not_writable'] );
-			if ($this->isJson ())
-				$this->_jsonData->success = false;
 			return false;
 		}
 		$uploadfile = '';
@@ -130,12 +123,8 @@ class AddT extends rtorrent {
 		
 		if (($result1->errno == 0) && ($result2->errno == 0) && ($res [0] !== false)) {
 			$this->addMessage ( $this->_str ['info_add_torrent'] );
-			if ($this->isJson ())
-				$this->_jsonData->success = true;
 		} else {
 			$this->addMessage ( $this->_str ['err_add_torrent'] );
-			if ($this->isJson ())
-				$this->_jsonData->success = false;
 			@unlink ( $uploadfile );
 		}
 		$message = new xmlrpcmsg ( "set_directory", array (new xmlrpcval ( DIR_DOWNLOAD, 'string' ) ) );
