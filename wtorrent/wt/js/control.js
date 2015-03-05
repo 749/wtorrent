@@ -66,6 +66,14 @@ var Control = Class.create({
 			this.torrentFile = {};
 			this.initFileDrop();
 		}
+		
+		$(document).observe('keydown', (function(e){
+			var keycode = e.keyCode;
+			if(e.ctrlKey && keycode == 82/*R*/) {
+				e.stop();
+				this.reloadMain();
+			}
+		}).bind(this));
 	},
 	initFileDrop: function() {
 		document.body.ondragover = function(e) {/* prevent default to allow drop*/ e.preventDefault(); this.className = 'filehover'; return false;};
