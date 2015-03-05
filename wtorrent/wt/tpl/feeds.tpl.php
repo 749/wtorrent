@@ -63,7 +63,7 @@
 					&nbsp;&nbsp;<input type="submit" value="{$str.feed_add}" />
 				</div>
 			</form>
-
+		</div>
 {else}
 	{assign value=$web->getFeed() var=feed}
 	<div style="border-bottom: 2px solid #85a5c0; color: #85a5c0; font-size: 14px; font-weight: bold; text-align: left; margin-left: 10px; padding-left: 20px; margin-right: 10px; padding-bottom: 5px;margin-bottom: 10px;">{$web->getFeedTitle()} - <small>{$web->getFeedUrl()}</small></div>
