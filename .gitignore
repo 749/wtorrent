@@ -1,6 +1,7 @@
 wtorrent/tpl_c/
 wtorrent/conf/user.conf.php
 wtorrent/db/database.db
+wtorrent/torrents
 
 ## Eclipse
 *.pydevproject
